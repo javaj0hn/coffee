@@ -1,0 +1,1 @@
+# API for mossgiant.xyz bot
