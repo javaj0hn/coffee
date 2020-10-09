@@ -166,11 +166,6 @@ def osrsLookup(rsn):
 def xptracker():
   return render_template("xptracker.html")
 
-# results
-@app.route('/osrs/xptracker/results/<string:token>')
-def results_xptracker(token):
-  return render_template("results.html", data=data)
-
 @app.route('/osrs/xptracker/start')
 def start_xptracker():
   tracker = []
@@ -270,6 +265,21 @@ def end_xptracker():
 
   # return results
   return jsonify(True, tracker)
+
+def get_overall(person):
+    return person.get('overall_xp')
+
+@app.route('/osrs/xptracker/results/<string:id>')
+def publicResults(id):
+  # check for id etc
+  # open json file
+  with open("data/xptracker/r_" + id +".json", 'r') as fp:
+    data = json.load(fp)
+
+  header = data[0]
+  data.pop(0)
+  data.sort(key=get_overall, reverse=True)
+  return render_template('results.html', header=header, data=data)
 
 if __name__ == '__main__':
   app.run(

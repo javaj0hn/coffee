@@ -4,7 +4,7 @@ config["HOST"] = "localhost"
 config["DOMAIN"] = "localhost"
 config["PORT"] = 5000
 config["SITENAME"] = "mossgiant.xyz"
-config["DEBUG"] = False
+config["DEBUG"] = True
 
 # stat lookup configs
 config["OSRS_HISCORE_URL"] = "https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player="
