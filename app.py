@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 
 from urllib.request import urlopen
 import urllib.error, json, math, re
@@ -71,7 +71,7 @@ def osrsPopulation():
 
 # osrs stat lookup
 @app.get('/osrs/stats/{rsn}')
-def osrsLookup(rsn: str):
+def osrsLookup(rsn: str = Query(None, min_length=2, max_length=12)):
     # check if rsn is empty
     if not rsn:
       return json.dumps(False)
