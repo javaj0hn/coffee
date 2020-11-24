@@ -3,13 +3,8 @@ from fastapi import FastAPI, Query
 from urllib.request import urlopen
 import urllib.error, json, math, re
 from requests_html import HTML
-#from socket import timeout
 import string, random, json
-#import sqlite3
-#import requests
-#import datetime
 from utils.datetime_z import parse_datetime
-#import pytz
 
 # import configuration
 from conf import config
@@ -25,10 +20,9 @@ def convert(lst):
     res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)} 
     return res_dct
 
-# landing page
 @app.get('/')
 def index():
-    return "Hi"
+    return {"status": "online"}
 
 # osrs population
 @app.get('/osrs/population')
@@ -71,10 +65,14 @@ def osrsPopulation():
 
 # osrs stat lookup
 @app.get('/osrs/stats/{rsn}')
-def osrsLookup(rsn: str = Query(None, min_length=2, max_length=12)):
+def osrsLookup(rsn: str):
     # check if rsn is empty
     if not rsn:
       return json.dumps(False)
+
+    # check if rsn length too long
+    if len(rsn) > 12:
+        return json.dumps(False)
 
     # replace spaces with underscores
     rsn.replace(" ", "_")
