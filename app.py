@@ -5,6 +5,8 @@ import urllib.error, json, math, re
 from requests_html import HTML
 import string, random, json
 from utils.datetime_z import parse_datetime
+from fastapi.responses import JSONResponse
+
 
 # import configuration
 from conf import config
@@ -61,7 +63,7 @@ def osrsPopulation():
         except Exception as e:
           pass
 
-    return json.dumps(data)
+    return JSONResponse(content=data)
 
 # osrs stat lookup
 @app.get('/osrs/stats/{rsn}')
@@ -156,4 +158,4 @@ def osrsLookup(rsn: str):
     stats['construction_xp'] = results[71]
     stats['overall_xp'] = results[0]
 
-    return json.dumps(stats)
+    return JSONResponse(content=stats)
