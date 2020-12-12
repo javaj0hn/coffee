@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query
 from typing import Optional
+import attr
 from urllib.request import urlopen
 import urllib.error, json, math, re
 from requests_html import HTML
@@ -7,9 +8,14 @@ import string, random, json
 from utils.datetime_z import parse_datetime
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from discord_webhook import DiscordWebhook
+import os
 
 # import configuration
 from conf import config
+
+# import db
+from db import db
 
 app = FastAPI()
 
@@ -19,6 +25,24 @@ class XPTracker(BaseModel):
 	event_name: str = None
 	server: str = None
 	members: list = None
+
+class Account(BaseModel):
+	rsn: str = None
+
+class TrackedAccount(BaseModel):
+	rsn: str = None
+	attack_xp: int = None
+	strength_xp: int = None
+	hitpoints_xp: int = None
+	ranged_xp: int = None
+	magic_xp: int = None
+
+class MemberlistUpdate(BaseModel):
+	invalid: list = None
+
+class DrunkCoinEnroll(BaseModel):
+	discord_id: str = None
+	balance: int = 10
 
 # random id generator
 def random_generator(size=6, chars=string.ascii_uppercase + string.digits):
@@ -48,18 +72,55 @@ def rsnValidateClean(rsn: str):
 def index():
     return {"status": "online"}
 
+@app.post('/osrs/legacy/webhook')
+def callWebHook(body: MemberlistUpdate):
+	webhook = DiscordWebhook(url=os.environ.get('ly_webhook'), content='Memberlist Updated! ~ https://legacy-rs.org/memberlist/')
+	response = webhook.execute()
+	return True
+
 @app.post('/osrs/track/s/clan')
 def osrsTrackClanXP(body: XPTracker):
 	# loop through users and look up stats
 	memberStats = []
 	for rsn in body.members:
 		print("Looking up: " + rsn)
-		stats = osrsLookup(rsn)
-		memberStats.append(stats.copy())
+		stats = str(osrsLookup(rsn))
+		data = json.loads(stats)
+
+		#memberStats.append(asdict(account.copy()))
 	return JSONResponse(content=memberStats)
 
 @app.get('/osrs/track/p/start/{rsn}')
 def osrsTrackPerson(rsn: str):
+	return
+
+# enroll user into DrunkCoin
+@app.post('/drunkcoin/enroll/')
+def dcEnroll(body: DrunkCoinEnroll):
+	data = db.enrollUser(body)
+	return JSONResponse(content=data)
+
+# get drunkcoin leaderboard
+@app.get('/drunkcoin/leaderboard')
+def dcLeaderboard():
+	data = db.getLeaderboard()
+	return JSONResponse(content=data)
+
+# get drunkcoin balance
+@app.get('/drunkcoin/balance/{discord_id}')
+def dcBalance(discord_id: str):
+	data = db.getBalance(discord_id)
+	return JSONResponse(content=data)
+
+# get drunkcoin active fights
+@app.get('/drunkcoin/a/fights')
+def dcActiveFights():
+	data = db.getFights()
+	return JSONResponse(content=data)
+
+# get drunkcoin fight results
+@app.get('/drunkcoin/r/fights')
+def dcFightResults():
 	return
 
 # osrs population
