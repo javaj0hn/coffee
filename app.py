@@ -153,7 +153,7 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 					"hitpoints_xp": int(ending['hitpoints_xp']) - int(player['hitpoints_xp']),
 					"ranged_xp": int(ending['ranged_xp']) - int(player['ranged_xp']),
 					"magic_xp": int(ending['magic_xp']) - int(player['magic_xp']),
-					"snare_count": (int(ending['magic_xp']) - int(player['magic_xp'])) / 60
+					"snare_count": round(((int(ending['magic_xp']) - int(player['magic_xp'])) / 60))
 				}
 				results.append(gains.copy())
 			
