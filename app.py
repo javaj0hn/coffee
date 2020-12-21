@@ -146,6 +146,7 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 		}
 		results.append(eventHeader.copy())
 
+		# test
 		# loop & skip first row
 		for player in starting[1:]:
 			with urllib.request.urlopen("http://localhost:8000/osrs/stats/" + player['rsn']) as url:
