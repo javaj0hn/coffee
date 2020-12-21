@@ -173,9 +173,11 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 
 		# TODO: after looping, do we retry invalid accounts?
 
-		# calc averages & overall gains
+		# calc gains and mvps
 		overallStats = {
 			"overall_xp": 0,
+			"overall_mvp_rsn": "",
+			"overall_mvp_xp": 0,
 			"attack_xp": 0,
 			"strength_xp": 0,
 			"defence_xp": 0,
@@ -186,14 +188,17 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 		}
 		for r in results[1:]:
 			overallStats['overall_xp'] += int(r['overall_xp'])
+			if (int(r['overall_xp']) > int(overallStats['overall_mvp_xp'])):
+				overallStats['overall_mvp_rsn'] = r['rsn']
+				overallStats['overall_mvp_xp'] = r['overall_xp']
 
-		print(overallStats)
+		results.insert(1, overallStats)
 
 		# write to json file
 		with open("data/xptracker/results_" + body.token + ".json", 'w') as fp:
 			json.dump(results, fp)
 
-	# delete starting json?
+	# TODO: delete starting json?
 
 	return JSONResponse(content=results)
 
