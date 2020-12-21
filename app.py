@@ -135,8 +135,16 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 		starting = json.load(f)
 	
 	if starting:
+
 		results = []
 		invalidAccounts = []
+
+		# add event header
+		eventHeader = {
+			"token": body.token,
+			"event_details": starting[0]
+		}
+		results.append(eventHeader.copy())
 
 		# loop & skip first row
 		for player in starting[1:]:
