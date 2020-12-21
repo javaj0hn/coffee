@@ -146,13 +146,11 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 		}
 		results.append(eventHeader.copy())
 
-		# test
 		# loop & skip first row
 		for player in starting[1:]:
 			with urllib.request.urlopen("http://localhost:8000/osrs/stats/" + player['rsn']) as url:
 				ending = json.loads(url.read().decode())
 			if (ending['status'] == True):
-				print(ending)
 				gains = {
 					"rsn": ending['rsn'],
 					"overall_xp": int(ending['overall_xp']) - int(player['overall_xp']),
@@ -172,6 +170,30 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 			else:
 				invalidAccounts.append(rsn)
 
+
+		# TODO: after looping, do we retry invalid accounts?
+
+		# calc averages & overall gains
+		overallStats = {
+			"overall_xp": 0,
+			"attack_xp": 0,
+			"strength_xp": 0,
+			"defence_xp": 0,
+			"hitpoints_xp": 0,
+			"ranged_xp": 0,
+			"magic_xp": 0,
+			"snare_count": 0
+		}
+		for r in results[1:]:
+			overallStats['overall_xp'] += int(r['overall_xp'])
+
+		print(overallStats)
+
+		# write to json file
+		with open("data/xptracker/results_" + body.token + ".json", 'w') as fp:
+			json.dump(results, fp)
+
+	# delete starting json?
 
 	return JSONResponse(content=results)
 
