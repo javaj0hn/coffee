@@ -20,11 +20,13 @@ from db import db
 app = FastAPI()
 
 class XPTracker(BaseModel):
-	token: str = None
 	clan_name: str = None
 	event_name: str = None
 	server: str = None
 	members: list = None
+
+class XPTrackEnd(BaseModel):
+	token: str = None
 
 class Account(BaseModel):
 	rsn: str = None
@@ -74,25 +76,95 @@ def index():
 
 @app.post('/osrs/legacy/webhook')
 def callWebHook(body: MemberlistUpdate):
-	webhook = DiscordWebhook(url=os.environ.get('ly_webhook'), content='Memberlist Updated! ~ https://legacy-rs.org/memberlist/')
-	response = webhook.execute()
+	# fetch invalid users
+	with urllib.request.urlopen("https://legacy-rs.org/coffee/invalid.json") as url:
+		data = json.loads(url.read().decode())
+		print(data)
+	# fetch new avgs?
+
+	# send webhook with payload
+	#webhook = DiscordWebhook(url=os.environ.get('ly_webhook'), content='Memberlist Updated! ~ https://legacy-rs.org/memberlist/')
+	#response = webhook.execute()
 	return True
 
 @app.post('/osrs/track/s/clan')
 def osrsTrackClanXP(body: XPTracker):
+
+	# generate token
+	token = random_generator()
+
 	# loop through users and look up stats
 	memberStats = []
+	invalidAccounts = []
+
+	# append event headers
+	eventHeader = {
+		"token": token,
+		"clan_name": body.clan_name,
+		"event_name": body.event_name,
+		"server": body.server
+	}
+	memberStats.append(eventHeader.copy())
+
 	for rsn in body.members:
 		print("Looking up: " + rsn)
-		stats = str(osrsLookup(rsn))
-		data = json.loads(stats)
+		with urllib.request.urlopen("http://localhost:8000/osrs/stats/" + rsn) as url:
+			data = json.loads(url.read().decode())
+			if (data['status'] == True):
+				memberStats.append(data.copy())
+			elif (data['status'] == False):
+				invalidAccounts.append(rsn)
+			else:
+				invalidAccounts.append(rsn)
 
-		#memberStats.append(asdict(account.copy()))
-	return JSONResponse(content=memberStats)
+	# write to json
+	if memberStats:
+		with open("data/xptracker/" + token + ".json", 'w') as fp:
+			json.dump(memberStats, fp)
 
-@app.get('/osrs/track/p/start/{rsn}')
-def osrsTrackPerson(rsn: str):
-	return
+	data = {
+		"token": token,
+		"invalidAccounts": invalidAccounts
+	}
+
+	return JSONResponse(content=data)
+
+@app.post('/osrs/track/e/clan')
+def osrsEndTrackClanXP(body: XPTrackEnd):
+	with open("data/xptracker/" + body.token + ".json", 'r') as f:
+		starting = json.load(f)
+	
+	if starting:
+		results = []
+		invalidAccounts = []
+
+		# loop & skip first row
+		for player in starting[1:]:
+			with urllib.request.urlopen("http://localhost:8000/osrs/stats/" + player['rsn']) as url:
+				ending = json.loads(url.read().decode())
+			if (ending['status'] == True):
+				print(ending)
+				gains = {
+					"rsn": ending['rsn'],
+					"overall_xp": int(ending['overall_xp']) - int(player['overall_xp']),
+					"attack_xp": int(ending['attack_xp']) - int(player['attack_xp']),
+					"strength_xp": int(ending['strength_xp']) - int(player['strength_xp']),
+					"defence_xp": int(ending['defence_xp']) - int(player['defence_xp']),
+					"hitpoints_xp": int(ending['hitpoints_xp']) - int(player['hitpoints_xp']),
+					"ranged_xp": int(ending['ranged_xp']) - int(player['ranged_xp']),
+					"magic_xp": int(ending['magic_xp']) - int(player['magic_xp']),
+					"snare_count": (int(ending['magic_xp']) - int(player['magic_xp'])) / 60
+				}
+				results.append(gains.copy())
+			
+			# if rsn does not exist
+			elif (ending['status'] == False):
+				invalidAccounts.append(rsn)
+			else:
+				invalidAccounts.append(rsn)
+
+
+	return JSONResponse(content=results)
 
 # enroll user into DrunkCoin
 @app.post('/drunkcoin/enroll/')
@@ -241,5 +313,5 @@ def osrsLookup(rsn: str):
 	stats['hunting_xp'] = results[68]
 	stats['contruction_lvl'] = results[70]
 	stats['construction_xp'] = results[71]
-	stats['overall_xp'] = results[0]	
+	stats['overall_xp'] = results[2]	
 	return JSONResponse(content=stats)
