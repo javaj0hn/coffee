@@ -179,19 +179,55 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 			"overall_mvp_rsn": "",
 			"overall_mvp_xp": 0,
 			"attack_xp": 0,
+			"attack_mvp_rsn": "",
+			"attack_mvp_xp": 0,
 			"strength_xp": 0,
+			"strength_mvp_rsn": "",
+			"strength_mvp_xp": 0,
 			"defence_xp": 0,
+			"defence_mvp_rsn": "",
+			"defence_mvp_xp": 0,
 			"hitpoints_xp": 0,
+			"hitpoints_mvp_rsn": "",
+			"hitpoints_mvp_xp": 0,
 			"ranged_xp": 0,
+			"ranged_mvp_rsn": "",
+			"ranged_mvp_xp": 0,
 			"magic_xp": 0,
-			"snare_count": 0
+			"magic_mvp_rsn": "",
+			"magic_mvp_xp": 0,
+			"snare_count": 0,
+			"snare_mvp_rsn": "",
+			"snare_mvp_count": 0
 		}
 		for r in results[1:]:
 			overallStats['overall_xp'] += int(r['overall_xp'])
 			if (int(r['overall_xp']) > int(overallStats['overall_mvp_xp'])):
 				overallStats['overall_mvp_rsn'] = r['rsn']
 				overallStats['overall_mvp_xp'] = r['overall_xp']
+			if (int(r['attack_xp']) > int(overallStats['attack_mvp_xp'])):
+				overallStats['attack_mvp_rsn'] = r['rsn']
+				overallStats['attack_mvp_xp'] = r['attack_xp']
+			if (int(r['strength_xp']) > int(overallStats['strength_mvp_xp'])):
+				overallStats['strength_mvp_rsn'] = r['rsn']
+				overallStats['strength_mvp_xp'] = r['strength_xp']
+			if (int(r['defence_xp']) > int(overallStats['defence_mvp_xp'])):
+				overallStats['defence_mvp_rsn'] = r['rsn']
+				overallStats['defence_mvp_xp'] = r['defence_xp']
+			if (int(r['hitpoints_xp']) > int(overallStats['hitpoints_mvp_xp'])):
+				overallStats['hitpoints_mvp_rsn'] = r['rsn']
+				overallStats['hitpoints_mvp_xp'] = r['hitpoints_xp']
+			if (int(r['ranged_xp']) > int(overallStats['ranged_mvp_xp'])):
+				overallStats['ranged_mvp_rsn'] = r['rsn']
+				overallStats['ranged_mvp_xp'] = r['ranged_xp']
+			if (int(r['magic_xp']) > int(overallStats['magic_mvp_xp'])):
+				overallStats['magic_mvp_rsn'] = r['rsn']
+				overallStats['magic_mvp_xp'] = r['magic_xp']
+			if (int(r['snare_count']) > int(overallStats['snare_mvp_count'])):
+				overallStats['snare_mvp_rsn'] = r['rsn']
+				overallStats['snare_mvp_count'] = r['snare_count']
 
+		# insert misc. stats
 		results.insert(1, overallStats)
 
 		# write to json file
