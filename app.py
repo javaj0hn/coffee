@@ -90,6 +90,8 @@ def callWebHook(body: MemberlistUpdate):
 @app.post('/osrs/track/s/clan')
 def osrsTrackClanXP(body: XPTracker):
 
+	print(body)
+
 	# generate token
 	token = random_generator()
 
@@ -107,8 +109,7 @@ def osrsTrackClanXP(body: XPTracker):
 	memberStats.append(eventHeader.copy())
 
 	for rsn in body.members:
-		print("Looking up: " + rsn)
-		with urllib.request.urlopen("http://localhost:8000/osrs/stats/" + rsn) as url:
+		with urllib.request.urlopen(config['BASE_URL'] + "/osrs/stats/" + rsn) as url:
 			data = json.loads(url.read().decode())
 			if (data['status'] == True):
 				memberStats.append(data.copy())
@@ -135,7 +136,6 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 		starting = json.load(f)
 	
 	if starting:
-
 		results = []
 		invalidAccounts = []
 
@@ -148,7 +148,7 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 
 		# loop & skip first row
 		for player in starting[1:]:
-			with urllib.request.urlopen("http://localhost:8000/osrs/stats/" + player['rsn']) as url:
+			with urllib.request.urlopen(config['BASE_URL'] + "/osrs/stats/" + player['rsn']) as url:
 				ending = json.loads(url.read().decode())
 			if (ending['status'] == True):
 				gains = {

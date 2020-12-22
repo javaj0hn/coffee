@@ -3,7 +3,7 @@ config = dict()
 config["HOST"] = "localhost"
 config["DOMAIN"] = "localhost"
 config["PORT"] = 5000
-config["SITENAME"] = "mossgiant.xyz"
+config["BASE_URL"] = "http://localhost:8000"
 config["DEBUG"] = True
 
 # stat lookup configs
