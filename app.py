@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import attr
 from urllib.request import urlopen
@@ -18,6 +19,21 @@ from conf import config
 from db import db
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:8000"
+    "http://localhost:8080",
+	"http://localhost:5000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class XPTracker(BaseModel):
 	clan_name: str = None
