@@ -151,16 +151,22 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 	with open("data/xptracker/" + body.token + ".json", 'r') as f:
 		starting = json.load(f)
 	
+
+	print(body)
 	if starting:
 		results = []
+		members = []
 		invalidAccounts = []
 
 		# add event header
 		eventHeader = {
-			"token": body.token,
 			"event_details": starting[0]
 		}
 		results.append(eventHeader.copy())
+
+		##members = {
+		#	"member": []
+		#}
 
 		# loop & skip first row
 		for player in starting[1:]:
@@ -178,7 +184,8 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 					"magic_xp": int(ending['magic_xp']) - int(player['magic_xp']),
 					"snare_count": round(((int(ending['magic_xp']) - int(player['magic_xp'])) / 60))
 				}
-				results.append(gains.copy())
+				members.append(gains.copy())
+				#results.append(gains.copy())
 			
 			# if rsn does not exist
 			elif (ending['status'] == False):
@@ -246,12 +253,16 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 		# insert misc. stats
 		results.insert(1, overallStats)
 
+		# append members
+		results.append(members.copy())
+
 		# write to json file
 		with open("data/xptracker/results_" + body.token + ".json", 'w') as fp:
 			json.dump(results, fp)
 
 	# TODO: delete starting json?
 
+	print(results)
 	return JSONResponse(content=results)
 
 # enroll user into DrunkCoin
