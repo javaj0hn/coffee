@@ -105,9 +105,6 @@ def callWebHook(body: MemberlistUpdate):
 
 @app.post('/osrs/track/s/clan')
 def osrsTrackClanXP(body: XPTracker):
-
-	print(body)
-
 	# generate token
 	token = random_generator()
 
@@ -148,11 +145,14 @@ def osrsTrackClanXP(body: XPTracker):
 
 @app.post('/osrs/track/e/clan')
 def osrsEndTrackClanXP(body: XPTrackEnd):
-	with open("data/xptracker/" + body.token + ".json", 'r') as f:
-		starting = json.load(f)
+	try:
+		with open("data/xptracker/" + body.token + ".json", 'r') as f:
+			starting = json.load(f)
+	except IOError:
+		return JSONResponse(conent={"status": "error", "msg": "This token does not exist"})
+	except Exception as e:
+		return JSONResponse(conent={"status": "error", "msg": "An unknown error occurred"})
 	
-
-	print(body)
 	if starting:
 		results = []
 		members = []
@@ -163,10 +163,6 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 			"event_details": starting[0]
 		}
 		results.append(eventHeader.copy())
-
-		##members = {
-		#	"member": []
-		#}
 
 		# loop & skip first row
 		for player in starting[1:]:
@@ -185,13 +181,12 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 					"snare_count": round(((int(ending['magic_xp']) - int(player['magic_xp'])) / 60))
 				}
 				members.append(gains.copy())
-				#results.append(gains.copy())
 			
 			# if rsn does not exist
 			elif (ending['status'] == False):
-				invalidAccounts.append(rsn)
+				invalidAccounts.append(ending['rsn'])
 			else:
-				invalidAccounts.append(rsn)
+				invalidAccounts.append(ending['rsn'])
 
 
 		# TODO: after looping, do we retry invalid accounts?
@@ -256,13 +251,13 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 		# append members
 		results.append(members.copy())
 
+		# TODO: generate new token for results? or should we just delete the starting data?
 		# write to json file
 		with open("data/xptracker/results_" + body.token + ".json", 'w') as fp:
 			json.dump(results, fp)
 
 	# TODO: delete starting json?
 
-	print(results)
 	return JSONResponse(content=results)
 
 # enroll user into DrunkCoin
