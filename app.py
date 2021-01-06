@@ -90,17 +90,8 @@ def rsnValidateClean(rsn: str):
 def index():
     return {"status": "online"}
 
-@app.post('/osrs/legacy/webhook')
-def callWebHook(body: MemberlistUpdate):
-	# fetch invalid users
-	with urllib.request.urlopen("https://legacy-rs.org/coffee/invalid.json") as url:
-		data = json.loads(url.read().decode())
-		print(data)
-	# fetch new avgs?
-
-	# send webhook with payload
-	#webhook = DiscordWebhook(url=os.environ.get('ly_webhook'), content='Memberlist Updated! ~ https://legacy-rs.org/memberlist/')
-	#response = webhook.execute()
+@app.get('/osrs/legacy/webhook')
+def callWebHook():
 	return True
 
 @app.post('/osrs/track/s/clan')
@@ -257,7 +248,22 @@ def osrsEndTrackClanXP(body: XPTrackEnd):
 			json.dump(results, fp)
 
 	# TODO: delete starting json?
+	try:
+		os.remove("data/xptracker/" + body.token + ".json")
+	except:
+		pass
 
+	return JSONResponse(content=results)
+
+@app.get('/osrs/track/results/{token}')
+def trackResults(token: str):
+	try:
+		with open("data/xptracker/results_" + token + ".json", 'r') as f:
+			results = json.load(f)
+	except IOError:
+		return JSONResponse(conent={"status": "error", "msg": "This token does not exist"})
+	except Exception as e:
+		return JSONResponse(conent={"status": "error", "msg": "An unknown error occurred"})
 	return JSONResponse(content=results)
 
 # enroll user into DrunkCoin
