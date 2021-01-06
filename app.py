@@ -24,7 +24,9 @@ origins = [
     "http://localhost",
     "http://localhost:8000"
     "http://localhost:8080",
-	"http://localhost:5000"
+	"http://localhost:5000",
+	"http://tracker.mossgiant.xyz",
+	"https://tracker.mossgiant.xyz/"
 ]
 
 app.add_middleware(
