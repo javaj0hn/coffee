@@ -1,0 +1,63 @@
+<html>
+<head>
+    <title>TeamSpeak Picture</title>
+    <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+
+    <style>
+        ul {
+  list-style-type: none!important;
+}
+
+ul li, ol li {
+  line-height: 1.5!important;
+}
+
+ol {
+  list-style-type: none!important;
+  padding-left: 10px!important;
+}
+input[type=checkbox]:checked + label.strikethrough{
+  text-decoration: line-through;
+}
+    </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <div class="nav-left">
+        <a class="brand" href="#">TeamSpeak Snapshot</a>
+        <div class="tabs">
+          <a>Clients: {{data.1['clients_connected']}}</a>
+          <a>Date: {{data.0['date']}}</a>
+          <a>Time: {{data.0['time']}}</a>
+        </div>
+      </div>
+    </nav>
+    {% for item in data.2 %}
+    <ul>
+        <li><img src="/static/images/default/16x16_channel_green.png"/>{{item['channel_name']}}</li>
+        <ol>
+        {% for user in item['clients'] %}
+        <li>
+          <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
+          <label for="packers" class="strikethrough">
+          {% if user['client_input_muted'] == '1' %}
+          <img src="/static/images/default/16x16_input_muted.png" alt={{ user['client_input_muted']  }}  />
+          {% endif %}
+          {% if user['client_input_muted'] == '0' %}
+          <img src="/static/images/default/16x16_player_off.png" alt={{ user['client_input_muted']  }}  />
+          {% endif %}
+          {% if user['client_output_muted'] == '1' %}
+          <img src="/static/images/default/16x16_output_muted.png" alt={{ user['client_output_muted']  }}  />
+          {% endif %}
+          {{user['client_nickname']}} | {{user['member_groups']}} | <img src="/static/images/countries/{{user['client_country']}}.png" alt={{ user['client_country']  }}  />
+          | Plaform: {{user['client_platform']}} | Client Version: {{user['client_version']}}
+          </label>
+          </li>
+        {% endfor %}
+    </ol>
+    </ul>
+    {% endfor %}
+  </div>
+</body>
+</html>

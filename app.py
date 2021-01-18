@@ -1,5 +1,8 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from typing import Optional
 import attr
 from urllib.request import urlopen
@@ -7,10 +10,11 @@ import urllib.error, json, math, re
 from requests_html import HTML
 import string, random, json
 from utils.datetime_z import parse_datetime
-from fastapi.responses import JSONResponse
+from utils import teaspeak
 from pydantic import BaseModel
 from discord_webhook import DiscordWebhook
 import os
+from datetime import date, datetime
 
 # import configuration
 from conf import config
@@ -20,13 +24,14 @@ from db import db
 
 app = FastAPI()
 
+templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 origins = [
     "http://localhost",
     "http://localhost:8000"
     "http://localhost:8080",
-	"http://localhost:5000",
-	"http://tracker.mossgiant.xyz",
-	"https://tracker.mossgiant.xyz/"
+	"http://localhost:5000"
 ]
 
 app.add_middleware(
@@ -91,6 +96,57 @@ def rsnValidateClean(rsn: str):
 @app.get('/')
 def index():
     return {"status": "online"}
+
+@app.get('/ts/snapshot')
+def fetchTsPic():
+	#TODO: this must be a secured endpoint
+	results = []
+
+	# fetch ts data
+	data = teaspeak.tsPic()
+
+	# if we get data
+	if data:
+		# generate event id
+		event_id = random_generator()
+
+		today = date.today()
+		now = datetime.now()
+
+		# write to json file
+		header = {
+			"token": event_id,
+			"date": today.strftime("%m/%d/%y"),
+			"time": now.strftime("%H:%M:%S")
+		}
+		results.append(header.copy())
+
+		# get server details
+		serverDetails = teaspeak.getServerInfo()
+
+		results.append(serverDetails.copy())
+
+		results.append(data.copy())
+
+		with open("data/ts/" + event_id + ".json", 'w') as fp:
+			json.dump(results, fp)
+
+		# return the url of the snapshot
+		return {"status": "success", "msg": "Generated ts snapshot", "data": "/ts/view/" + event_id}
+		
+	return {"status": "error", "msg": "Unknown error"}
+
+@app.get('/ts/view/{event_id}')
+def viewTsPic(request: Request, event_id: str):
+	try:
+		with open("data/ts/" + event_id + ".json", 'r') as f:
+			event = json.load(f)
+	except IOError:
+		return JSONResponse({"status": "error", "msg": "This token does not exist"})
+	except Exception as e:
+		return JSONResponse({"status": "error", "msg": "An unknown error occurred"})
+	
+	return templates.TemplateResponse("tspic.html", {"request": request, "data": event})
 
 @app.get('/osrs/legacy/webhook')
 def callWebHook():
