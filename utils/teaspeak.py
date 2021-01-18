@@ -2,12 +2,14 @@
 from telnetlib import *
 import json
 
+from core.conf import config
+
 def get_talk_power(clients):
     return clients.get('client_talk_power')
 
 def getRanks():
-    with Telnet('', 10011) as tn:
-        tn.write("".encode('ascii') + b"\n")
+    with Telnet(config['TEAMSPEAK_URL'], 10011) as tn:
+        tn.write(config['TEAMSPEAK_LOGIN'].encode('ascii') + b"\n")
         tn.read_until(b"error id=0 msg=ok")
         tn.write("servergrouplist".encode('ascii') + b"\n")
         tn.write(b"exit\n")
@@ -15,8 +17,8 @@ def getRanks():
     return str(servergroups.decode('utf-8').replace("\s", "")) 
 
 def getServerInfo():
-    with Telnet('', 10011) as tn:
-        tn.write("".encode('ascii') + b"\n")
+    with Telnet(config['TEAMSPEAK_URL'], 10011) as tn:
+        tn.write(config['TEAMSPEAK_LOGIN'].encode('ascii') + b"\n")
         tn.read_until(b"error id=0 msg=ok")
         tn.write("serverinfo".encode('ascii') + b"\n")
         tn.write(b"exit\n")
@@ -28,8 +30,8 @@ def getServerInfo():
     return serverI 
 
 def getChannels():
-    with Telnet('', 10011) as tn:
-        tn.write("".encode('ascii') + b"\n")
+    with Telnet(config['TEAMSPEAK_URL'], 10011) as tn:
+        tn.write(config['TEAMSPEAK_LOGIN'].encode('ascii') + b"\n")
         tn.read_until(b"error id=0 msg=ok")
         tn.write("channellist".encode('ascii') + b"\n")
         tn.write(b"exit\n")
@@ -37,8 +39,8 @@ def getChannels():
     return str(channels.decode('utf-8').replace("\s", ""))
 
 def getClients():
-    with Telnet('', 10011) as tn:
-        tn.write("".encode('ascii') + b"\n")
+    with Telnet(config['TEAMSPEAK_URL'], 10011) as tn:
+        tn.write(config['TEAMSPEAK_LOGIN'].encode('ascii') + b"\n")
         tn.read_until(b"error id=0 msg=ok")
         tn.write("clientlist".encode('ascii') + b"\n")
         tn.write(b"exit\n")
@@ -46,8 +48,8 @@ def getClients():
     return str(clients.decode('utf-8').replace("\s", ""))
 
 def detailClient(clid):
-    with Telnet('', 10011) as tn:
-        tn.write("".encode('ascii') + b"\n")
+    with Telnet(config['TEAMSPEAK_URL'], 10011) as tn:
+        tn.write(config['TEAMSPEAK_LOGIN'].encode('ascii') + b"\n")
         tn.read_until(b"error id=0 msg=ok")
         lazyCode = "clientinfo clid="+clid
         tn.write(lazyCode.encode('ascii') + b"\n")

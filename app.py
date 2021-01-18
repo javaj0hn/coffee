@@ -1,4 +1,5 @@
-from fastapi import FastAPI, Query, Request
+from fastapi import FastAPI, Query, Request, Depends
+from fastapi.security import OAuth2PasswordBearer
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
@@ -17,12 +18,14 @@ import os
 from datetime import date, datetime
 
 # import configuration
-from conf import config
+from core.conf import config
 
 # import db
 from db import db
 
 app = FastAPI()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -41,6 +44,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class Token(BaseModel):
+	token: str = None
 
 class XPTracker(BaseModel):
 	clan_name: str = None
@@ -97,9 +103,10 @@ def rsnValidateClean(rsn: str):
 def index():
     return {"status": "online"}
 
-@app.get('/ts/snapshot')
-def fetchTsPic():
-	#TODO: this must be a secured endpoint
+@app.post('/ts/snapshot')
+def fetchTsPic(body: Token):
+	if body.token != config["DUMMY_TOKEN"]:
+		return {"status": "error", "msg": "Invalid token"}
 	results = []
 
 	# fetch ts data
